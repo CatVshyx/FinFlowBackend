@@ -1,0 +1,157 @@
+Welcome to FinFlow api, here is some information how to work with it
+No required authentication:
+POST auth/register (
+    required params {"email":"your_email","password","your_password"}
+    optional params {"username":"your_username","phone":"your_phone_number"}
+    after successful registration you will be sent a verification link on email,
+    click on it to verify, otherwise you won`t been able to login
+)
+POST auth/login(
+   required params {"email":"your_email","password","your_password"}
+   after successful login you wil be given jwt access_token and refresh_token
+)
+POST auth/forgotPassword(
+    required params {"email":"your_email"}
+    after it code will be sent on your registered email, write it in to auth/resetPassword/
+)
+POST auth/resetPassword/(
+    required params{"code":"your_code", "password":"password_you_want_to_set"}
+    new password will be set and then you can login with your new password
+)
+GET auth/info(
+    information endpoint, tells about all the endpoints
+)
+POST auth/token/refresh(
+    required params{refresh token in Authorization then you`ll be given access and refresh token}
+)
+------------------------------------------------------------
+Required JWT token
+
+POST user/changePassword(
+    required params{"new_password":"your_new_password","current_password":"your_current_password"}
+)
+POST user/changeUserSettings(
+    optional params{"username":"your_username","phone":"your_phone_number"}
+    File
+)
+GET user/getMe(
+    returns this user`s data like [email,phone_number,date_of_creation etc.]
+)
+POST user/uploadUserPhoto(
+
+)
+POST user/company/createCompany(
+    required params{"name":"your_company_name"}
+    before creating a new company be sure you removed your previous one
+)
+DELETE /company/removeCompany(
+    required params - [null]
+    removes your company if you are the owner of it
+)
+POST /company/joinByCode(
+    required params {"code":"company_code"}
+    after joining you will get a role User and allows to view storage
+)
+DELETE /company/deleteUser(
+    required params {"email":"email_of_user"}
+    if you have admin_edit allows
+    and the user is neither an admin nor an owner, this user will be successfully deleted
+)
+POST /company/changeAllows(
+    required params("email":"user_email")
+    optional {
+        "admin_edit":"true",
+        "storage_edit":"true",
+        "finance_edit":"true",
+        "discount_edit":"true",
+        "admin_view":"true",
+        "storage_view":"true",
+        "finance_view":"true",
+        "discount_view":"true"
+    }
+    different roles with "admin_edit" allow
+    USER - can change only allows of other users (but not owners and admins) and cannot delete anyone
+    ADMINISTRATOR - can change only allows of other users (but not owners and other admins) and can delete only users
+    OWNER can change allows of users and admins and delete users and admin
+)
+POST /company/inviteBySpecification(
+    required params {"email":"user_email"}
+    optional{the same as in /changeAllows}
+
+    only users with admin_edit can add new users by specifications
+    invitation  is sent to the email of registered user
+)
+GET /company/getData(
+    return all the data in JSON related to your allows (like admin_view - permission to view admin info)
+)
+GET /company/leaveCompany(
+    user leaves company
+)
+
+POST /help/sendQuestion(
+    required("title":"title","description":"description")
+    it saves and the answer will be sent onto your email
+)
+POST /res/addProduct(
+    required params{
+        "name":"product_name",
+        "price":"product_price",
+        "amount":"product_amount",
+        "category":"product_category",
+    }
+    optional params {"supplier":"your_supplier"}
+    available only for those who has allow "storage_edit"
+)
+POST /res/editProduct(
+    required params{"id":"product_id"}
+    optional params{
+        "name":"product_name",
+        "price":"product_price",
+        "amount":"product_amount",
+        "category":"product_category",
+        "supplier":"your_supplier"
+    }
+
+    available only for those who has allow "storage_edit"
+)
+DELETE /res/deleteProduct(
+    required params{"id":"product_id"}
+
+    available only for those who has allow "storage_edit"
+)
+POST /res/addDiscount(
+    required params{
+        "id":"product_id",
+        "discount":"discount{like 0.64}",
+        "start_date":"start_date(yyyy-mm-dd),
+        "end_date":"end_date(yyyy-mm-dd)"
+    }
+    available only for those who has allow "discount_edit"
+)
+POST /res/editDiscount(
+    required params{"id":"product_id"}
+    optional params{
+        "discount":"discount{like 0.64}",
+        "start_date":"start_date(dd-mm-yyyy),
+        "end_date":"end_date(dd-mm-yyyy)"
+    }
+    available only for those who has allow "discount_edit"
+)
+DELETE /res/deleteDiscount(
+    required params{"id":"product_id"}
+
+    available only for those who has allow "discount_edit"
+)
+
+
+
+
+
+
+----------------------------------
+TEST
+
+/addTestSoldProperty(
+    adds sold value to all the products in the app
+
+)
