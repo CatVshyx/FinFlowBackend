@@ -50,7 +50,7 @@ public class AuthenticationService {
                 request.getPassword()
         ));
         User u = userService.findByEmail(request.getEmail()).orElseThrow();
-        String access = jwtService.generateToken(User.toUserDetails(u),2);
+        String access = jwtService.generateToken(User.toUserDetails(u),3);
         String refresh = jwtService.generateToken(User.toUserDetails(u),72);
 
         return new AuthenticationResponse(access,refresh);

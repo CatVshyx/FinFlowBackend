@@ -136,7 +136,7 @@ public class AuthenticationController {
         User user =userService.findByEmail(userEmail).orElse(null);
         if(user == null) return new ResponseEntity<>("User not found", HttpStatusCode.valueOf(404));
 
-        String access = jwtService.generateToken(User.toUserDetails(user),2);
+        String access = jwtService.generateToken(User.toUserDetails(user),3);
 
         AuthenticationResponse response1 = new AuthenticationResponse(access,refreshToken);
 
