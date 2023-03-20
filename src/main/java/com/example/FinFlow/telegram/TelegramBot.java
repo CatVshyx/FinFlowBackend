@@ -1,7 +1,12 @@
 package com.example.FinFlow.telegram;
 
-import com.example.FinFlow.telegram.impl.EnterUUIDHandler;
-import com.example.FinFlow.telegram.impl.StartHelpCommandHandler;
+import com.example.FinFlow.telegram.handler.impl.CodeEnteredHandler;
+import com.example.FinFlow.telegram.handler.impl.EnterUUIDHandler;
+import com.example.FinFlow.telegram.handler.impl.StartHelpCommandHandler;
+import com.example.FinFlow.telegram.handler.impl.WorkMenuHandler;
+import com.example.FinFlow.telegram.model.UserSession;
+import com.example.FinFlow.telegram.model.UserRequest;
+import com.example.FinFlow.telegram.handler.UserRequestHandler;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -15,16 +20,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class TelegramConfig extends TelegramLongPollingBot {
-    private  TelegramDispatcher dispatcher;
+public class TelegramBot extends TelegramLongPollingBot {
+    private TelegramDispatcher dispatcher;
     private KeyboardHelper keyboardHelper = new KeyboardHelper();
-    public TelegramConfig() throws TelegramApiException {
+    private final UserSessionService userSessionService = new UserSessionService();
+    public TelegramBot() throws TelegramApiException {
         System.out.println("Bot initializing ");
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         telegramBotsApi.registerBot(this);
         List<UserRequestHandler> handlerList = new ArrayList<>();
         handlerList.add(new StartHelpCommandHandler(this,keyboardHelper));
-        handlerList.add(new EnterUUIDHandler(this,keyboardHelper));
+        handlerList.add(new EnterUUIDHandler(this,keyboardHelper,userSessionService));
+        handlerList.add(new CodeEnteredHandler(this,keyboardHelper));
+        handlerList.add(new WorkMenuHandler(this,keyboardHelper));
         dispatcher = new TelegramDispatcher(handlerList);
 
     }
@@ -46,20 +54,15 @@ public class TelegramConfig extends TelegramLongPollingBot {
             Long userId = update.getMessage().getChatId();
             String userFirstName = update.getMessage().getFrom().getFirstName();
 
+            UserSession session = userSessionService.getSession(userId);
+
+
             System.out.println("[{%s}, {%s}] : {%s}".formatted( userId, userFirstName, textFromUser));
-            UserRequest request = new UserRequest(userId,userFirstName,textFromUser);
+            UserRequest request = new UserRequest(userFirstName,textFromUser,session);
+
             if (!dispatcher.dispatch(request)){
                 sendMessage(userId,"Not realized");
             }
-//            SendMessage sendMessage = SendMessage.builder()
-//                    .chatId(userId.toString())
-//                    .text("Hello, I've received your text: " + textFromUser)
-//                    .build();
-//            try {
-//                this.sendApiMethod(sendMessage);
-//            } catch (TelegramApiException e) {
-//                e.printStackTrace();
-//            }
         } else {
            System.out.println("Unexpected update from user");
         }
@@ -75,6 +78,9 @@ public class TelegramConfig extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
     }
+    public boolean dispatch(UserRequest request){
+        return dispatcher.dispatch(request);
+    }
     public void sendMessage(Long chatId, String message, ReplyKeyboardMarkup markup){
         try {
             SendMessage sendMessage = SendMessage.builder()
@@ -86,6 +92,17 @@ public class TelegramConfig extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
-
+    }
+    public void sendMessage(Long chatId,ReplyKeyboardMarkup markup){
+        try {
+            SendMessage sendMessage = SendMessage.builder()
+                    .chatId(chatId.toString())
+                    .replyMarkup(markup)
+                    .text("")
+                    .build();
+            this.sendApiMethod(sendMessage);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
