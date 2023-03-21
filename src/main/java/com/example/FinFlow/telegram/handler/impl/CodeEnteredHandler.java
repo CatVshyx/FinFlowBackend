@@ -17,17 +17,17 @@ public class CodeEnteredHandler extends UserRequestHandler {
         String code = userRequest.getText();
         boolean isApplied = code.equals(appCode);
 
-        userRequest.getUserSession().setState(isApplied ? ConversationState.CODE_APPLIED : ConversationState.CODE_DENIED);
+//        userRequest.getUserSession().setState(isApplied ? ConversationState.CODE_APPLIED : ConversationState.CODE_DENIED);
         if(isApplied){
-            userRequest.setText("/proved");
+            userRequest.getUserSession().setState(ConversationState.CODE_APPLIED);
+            userRequest.setText("/workMenu");
             telegramConfig.dispatch(userRequest);
         }else {
-            telegramConfig.sendMessage(userRequest.getUserSession().getChatId(), "Not approved");
+            telegramConfig.sendMessage(userRequest.getUserSession().getChatId(), "Please enter your code again");
         }
     }
     @Override
     public boolean isApplicable(UserRequest userRequest) {
-        System.out.println(userRequest.toString());
         return userRequest.getUserSession().getState().equals(ConversationState.WAITING_FOR_CODE);
     }
     @Override

@@ -1,12 +1,11 @@
 package com.example.FinFlow.telegram;
 
-import com.example.FinFlow.telegram.handler.impl.CodeEnteredHandler;
-import com.example.FinFlow.telegram.handler.impl.EnterUUIDHandler;
-import com.example.FinFlow.telegram.handler.impl.StartHelpCommandHandler;
-import com.example.FinFlow.telegram.handler.impl.WorkMenuHandler;
+import com.example.FinFlow.service.EmailService;
+import com.example.FinFlow.telegram.handler.impl.*;
 import com.example.FinFlow.telegram.model.UserSession;
 import com.example.FinFlow.telegram.model.UserRequest;
 import com.example.FinFlow.telegram.handler.UserRequestHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -15,7 +14,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +22,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     private TelegramDispatcher dispatcher;
     private KeyboardHelper keyboardHelper = new KeyboardHelper();
     private final UserSessionService userSessionService = new UserSessionService();
+    @Autowired
+    private RequestList requestList;
+    @Autowired
+    private EmailService emailService;
     public TelegramBot() throws TelegramApiException {
         System.out.println("Bot initializing ");
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
@@ -33,6 +35,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         handlerList.add(new EnterUUIDHandler(this,keyboardHelper,userSessionService));
         handlerList.add(new CodeEnteredHandler(this,keyboardHelper));
         handlerList.add(new WorkMenuHandler(this,keyboardHelper));
+        handlerList.add(new SendEmailHandler(this,keyboardHelper));
         dispatcher = new TelegramDispatcher(handlerList);
 
     }
@@ -50,7 +53,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String textFromUser = update.getMessage().getText();
-
             Long userId = update.getMessage().getChatId();
             String userFirstName = update.getMessage().getFrom().getFirstName();
 
@@ -61,7 +63,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             UserRequest request = new UserRequest(userFirstName,textFromUser,session);
 
             if (!dispatcher.dispatch(request)){
-                sendMessage(userId,"Not realized");
+                request.setText("/start");
+                dispatch(request);
             }
         } else {
            System.out.println("Unexpected update from user");
@@ -78,6 +81,12 @@ public class TelegramBot extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
     }
+    public RequestList getRequestList(){
+        return requestList;
+    }
+    public void sendMail(String to, String message){
+        emailService.sendEmail(to,"Consult on FinFlow",message);
+    }
     public boolean dispatch(UserRequest request){
         return dispatcher.dispatch(request);
     }
@@ -93,16 +102,5 @@ public class TelegramBot extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
     }
-    public void sendMessage(Long chatId,ReplyKeyboardMarkup markup){
-        try {
-            SendMessage sendMessage = SendMessage.builder()
-                    .chatId(chatId.toString())
-                    .replyMarkup(markup)
-                    .text("")
-                    .build();
-            this.sendApiMethod(sendMessage);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 }

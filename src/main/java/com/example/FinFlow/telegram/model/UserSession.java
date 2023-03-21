@@ -17,8 +17,9 @@ public class UserSession {
         return state;
     }
 
-    public void setState(ConversationState state) {
+    public UserSession setState(ConversationState state) {
         this.state = state;
+        return this;
     }
 
     @Override

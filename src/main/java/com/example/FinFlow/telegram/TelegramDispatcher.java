@@ -19,6 +19,7 @@ public class TelegramDispatcher {
                 return true;
             }
         }
+
         return false;
     }
 }
