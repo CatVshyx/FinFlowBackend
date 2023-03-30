@@ -23,8 +23,7 @@ public class UserService {
     private EmailService emailService;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    @Value("${upload.path}")
-    private String uploadPath;
+
     public Response addNewUser(User user){
         User fromDB = userRepository.findByEmail(user.getEmail()).orElse(null);
 
@@ -147,18 +146,18 @@ public class UserService {
         return new Response(data, 200);
     }
 
-    public Response getUsersProfile(String mainEmail,String userEmail){
-        User main = userRepository.findByEmail(mainEmail).orElse(null);
-        User user = userRepository.findByEmail(userEmail).orElse(null);
-        if(user == null || main == null) return new Response(null, HttpStatus.NOT_FOUND);
-        if (main.getCompany() == null || user.getCompany() == null) return new Response(null,HttpStatus.BAD_REQUEST);
-        if (main.getCompany().intValue() != user.getCompany().intValue()) return new Response(null,HttpStatus.BAD_REQUEST);
-        if (user.getPhotos() == null) return new Response(null,HttpStatus.NO_CONTENT);
-
-
-        File f = new File(uploadPath+"/"+user.getPhotos());
-
-        return new Response(f,200);
-    }
+//    public Response getUsersProfile(String mainEmail,String userEmail){
+//        User main = userRepository.findByEmail(mainEmail).orElse(null);
+//        User user = userRepository.findByEmail(userEmail).orElse(null);
+//        if(user == null || main == null) return new Response(null, HttpStatus.NOT_FOUND);
+//        if (main.getCompany() == null || user.getCompany() == null) return new Response(null,HttpStatus.BAD_REQUEST);
+//        if (main.getCompany().intValue() != user.getCompany().intValue()) return new Response(null,HttpStatus.BAD_REQUEST);
+//        if (user.getPhotos() == null) return new Response(null,HttpStatus.NO_CONTENT);
+//
+//
+//        File f = new File(uploadPath+"/"+user.getPhotos());
+//
+//        return new Response(f,200);
+//    }
 
 }

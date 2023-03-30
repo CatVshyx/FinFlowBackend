@@ -20,8 +20,7 @@ import java.util.Map;
 public class CompanyController {
     @Autowired
     private CompanyService companyService;
-    @Value("${upload.path}")
-    private String uploadPath;
+
     @Autowired
     private JwtService jwtService;
     @Autowired
