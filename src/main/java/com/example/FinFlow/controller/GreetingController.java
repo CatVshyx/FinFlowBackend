@@ -1,14 +1,11 @@
 package com.example.FinFlow.controller;
 
-import com.example.FinFlow.additional.Response;
 import com.example.FinFlow.config.JwtService;
 import com.example.FinFlow.model.Company;
 import com.example.FinFlow.model.Date;
-import com.example.FinFlow.model.Product;
 import com.example.FinFlow.model.User;
 import com.example.FinFlow.repository.CompanyRepository;
 import com.example.FinFlow.repository.DateRepository;
-import com.example.FinFlow.repository.ProductRepository;
 import com.example.FinFlow.service.CompanyService;
 import com.example.FinFlow.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +13,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.Random;
 
 @RestController
@@ -35,10 +29,7 @@ public class GreetingController {
     private JwtService jwtService;
     @Autowired
     private CompanyService companyService;
-//    @GetMapping("/")
-//    public String greeting(@RequestParam(name="name", required=false, defaultValue="World") String name) {
-//        return "Hello %s".formatted(name);
-//    }
+
 
     @GetMapping("/addTestDates")
     public ResponseEntity<String> addNewDatesTEST(@RequestParam(name = "amount") int amount){

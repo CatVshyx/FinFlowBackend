@@ -7,8 +7,6 @@ import com.example.FinFlow.model.Discount;
 import com.example.FinFlow.model.Product;
 import com.example.FinFlow.model.User;
 import com.example.FinFlow.repository.ProductRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;

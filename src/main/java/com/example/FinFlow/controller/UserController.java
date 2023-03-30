@@ -4,16 +4,15 @@ import com.example.FinFlow.additional.AuthenticationResponse;
 import com.example.FinFlow.additional.RegisterRequest;
 import com.example.FinFlow.additional.Response;
 import com.example.FinFlow.config.JwtService;
+import com.example.FinFlow.driveAPI.DriveService;
 import com.example.FinFlow.model.User;
 import com.example.FinFlow.service.AuthenticationService;
-import com.example.FinFlow.service.FileService;
 import com.example.FinFlow.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,14 +24,10 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserService userService;
-
-
+    @Autowired
+    private DriveService driveService;
     @Autowired
     private JwtService jwtService;
-
-    @Autowired
-    private FileService fileService;
-
     @Autowired
     private AuthenticationService authenticationService;
     @GetMapping("/getAllUsers")
@@ -53,14 +48,20 @@ public class UserController {
         if (request != null){ response = userService.changeUsersSettings(email,request); }
         return new ResponseEntity<>(response.getDescription().toString(), response.getHttpCode());
     }
-    @PostMapping("/uploadUserPhoto")
-    public ResponseEntity<Object> uploadPhoto(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam(name = "file") MultipartFile  file){
-        Response response;
-        System.out.println("file is null" + file.isEmpty());
-        try{
-            response = fileService.uploadFile(getEmailByToken(token),file);
-        }catch (IOException e){
+    @PostMapping("/uploadPhoto")
+    public ResponseEntity<Object> uploadPhoto(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestParam(name = "file") MultipartFile  file) throws IOException {
+        String email = getEmailByToken(token);
+        User user = userService.findByEmail(email).orElse(null);
+        if (user == null){
             return new ResponseEntity<>("Something went wrong during uploading your photo, please try it again",HttpStatus.BAD_REQUEST);
+        }
+        Response response;
+        if (user.getPhotos() == null){
+            response = driveService.uploadFile(file.getOriginalFilename(),file.getInputStream(),DriveService.PHOTO_FOLDER);
+            user.setPhotos(response.getDescription().toString());
+            userService.saveUser(user);
+        }else{
+            response = driveService.updateFile(user.getPhotos(),file.getInputStream());
         }
         return new ResponseEntity<>(response.getDescription(), response.getHttpCode());
     }
@@ -86,7 +87,6 @@ public class UserController {
     }
     private  String getEmailByToken(String token){
         final String jwtToken = token.substring(7);
-
         return jwtService.extractEmail(jwtToken);
     }
 }

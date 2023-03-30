@@ -9,7 +9,6 @@ import com.example.FinFlow.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +49,6 @@ public class ResourceController {
         System.out.println(ans.getDescription());
         return new ResponseEntity<>(ans.getDescription(), ans.getHttpCode());
     }
-
     @PreAuthorize("hasAuthority('storage_edit')")
     @DeleteMapping("/deleteProduct")
     public ResponseEntity<String> deleteProduct(@RequestBody Map<String, String > request){
@@ -59,21 +57,17 @@ public class ResourceController {
         if(!ans) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>("The product is successfully deleted",HttpStatus.OK);
     }
-
     @PreAuthorize("hasAuthority('storage_edit')")
     @PostMapping("/sellProduct")
     public ResponseEntity<Object> editProduct(@RequestBody Map<String,String> request){
         if(!request.containsKey("id")) return new ResponseEntity<>("Write id to edit the product ", HttpStatus.BAD_REQUEST);
-
         try{
             Response r = productService.sellProduct(request);
             return new ResponseEntity<>(r.getDescription(),r.getHttpCode());
         }catch (NumberFormatException e){
             return new ResponseEntity<>("Not correct numbers",HttpStatus.BAD_REQUEST);
         }
-
     }
-
     @PreAuthorize("hasAuthority('storage_edit')")
     @PostMapping("/editProduct")
     public ResponseEntity<Object> sellProduct(@RequestBody Map<String,String> request){
@@ -82,8 +76,6 @@ public class ResourceController {
         Response answer = productService.editProduct(request);
         return new ResponseEntity<>(answer.getDescription(), answer.getHttpCode());
     }
-
-
     @PreAuthorize("hasAuthority('promo_edit')")
     @PostMapping("/addDiscount")
     public ResponseEntity<Object> addDiscount(@RequestBody Map<String,String> request){

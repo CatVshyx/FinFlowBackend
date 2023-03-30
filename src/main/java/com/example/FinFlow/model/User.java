@@ -45,7 +45,7 @@ public class User  {
     private String verificationCode;
 
 
-    @JsonIgnore
+//    @JsonIgnore
     @Column(length = 64)
     private String photos;
 
@@ -110,7 +110,10 @@ public class User  {
     }
 
     public String getPhotos() {
+//        return "https://test-back-ncm8.onrender.com/auth/media/"+photos;
+        if (photos == null) return null;
         return photos;
+//        return "http://localhost:8080/auth/media/"+photos;
     }
 
     public void setPhotos(String photos) {

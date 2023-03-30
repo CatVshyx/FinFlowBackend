@@ -7,10 +7,8 @@ import com.example.FinFlow.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.io.File;
 import java.time.LocalDate;
 import java.util.*;
@@ -25,7 +23,6 @@ public class UserService {
     private EmailService emailService;
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     @Value("${upload.path}")
     private String uploadPath;
     public Response addNewUser(User user){
@@ -72,6 +69,7 @@ public class UserService {
         }
         return true;
     }
+
     public Iterable<User> findAllUsers() {
         return userRepository.findAll();
     }
@@ -88,7 +86,7 @@ public class UserService {
         userRepository.save(user);
         return true;
     }
-    void saveUser(User user){
+    public void saveUser(User user){
         userRepository.save(user);
     }
     public Response changeUsersSettings(String emailByToken, Map<String, String> request) {
@@ -162,4 +160,5 @@ public class UserService {
 
         return new Response(f,200);
     }
+
 }

@@ -4,6 +4,7 @@ import com.example.FinFlow.additional.AuthenticationResponse;
 import com.example.FinFlow.additional.RegisterRequest;
 import com.example.FinFlow.additional.Response;
 import com.example.FinFlow.config.JwtService;
+import com.example.FinFlow.driveAPI.DriveService;
 import com.example.FinFlow.model.User;
 import com.example.FinFlow.service.AuthenticationService;
 import com.example.FinFlow.service.CompanyService;
@@ -12,33 +13,19 @@ import com.example.FinFlow.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.servlet.view.RedirectView;
-
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import java.io.*;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
-    @Value("${upload.path}")
-    private String uploadPath;
     @Autowired
     private EmailService emailService;
     @Autowired
@@ -50,7 +37,7 @@ public class AuthenticationController {
     @Autowired
     private JwtService jwtService;
     @Autowired
-    private UserDetailsService userDetailsService;
+    private DriveService driveService;
 
     public AuthenticationController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
@@ -87,38 +74,26 @@ public class AuthenticationController {
         Thread thread = new Thread(runnable,"emailSend");
         thread.start();
 
-        // sends code to the email specified
-        // user gets this code and writes it
-        //
         return new ResponseEntity<>("The code was successfully sent on your email", HttpStatusCode.valueOf(200));
     }
     @PostMapping("/resetPassword")
     public ResponseEntity<Object> resetPassword( @RequestBody Map<String,String> password){
-        // code password
-        // he resets password by code - code becomes null, password is changed and i give him jwt token
-        if(!password.containsKey("code") || !password.containsKey("password")) return new ResponseEntity<>("Either code is not written or your new password is not set",HttpStatus.BAD_REQUEST);
+        if(!password.containsKey("code") || !password.containsKey("password"))
+            return new ResponseEntity<>("Either code is not written or your new password is not set",HttpStatus.BAD_REQUEST);
 
         Response response = userService.changePasswordByCode(password);
 
         if (response.getHttpCode() != HttpStatus.OK) return new ResponseEntity<>(response.getDescription().toString(),HttpStatus.BAD_REQUEST);
-//        Map<String,String> data = ((Map<String, String>) response.getDescription());
-
-//        AuthenticationResponse auth = authenticationService.login(new RegisterRequest(data.get("email"), null,data.get("password"),null));
-//        System.out.println(auth.toString());
         return new ResponseEntity<>("Success",response.getHttpCode());
     }
     @GetMapping("/info")
-    public ResponseEntity<String> infoAPI(){
-        StringBuilder builder = new StringBuilder();
-        try(BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/static/info.txt"))){
-            while (reader.ready()){
-                String str = reader.readLine();
-                builder.append(str).append('\n');
-            }
-            return new ResponseEntity<>(builder.toString(), HttpStatusCode.valueOf(200));
-        }catch (IOException e){
-            throw new RuntimeException(e);
-        }
+    public ResponseEntity<StreamingResponseBody> infoAPI(){
+        HttpHeaders headers = new HttpHeaders();
+        Map.Entry<InputStream,String> entry = driveService.downloadFileAsInputStream(DriveService.INFO_ID);
+        headers.setContentType(MediaType.parseMediaType(entry.getValue()));
+
+        StreamingResponseBody body = DriveService.getStreamResponseBody(entry.getKey());
+        return ResponseEntity.ok().headers(headers).body(body);
     }
 
     @PostMapping("/token/refresh")
@@ -145,9 +120,19 @@ public class AuthenticationController {
 
     }
     @GetMapping("/")
-    public String greeting(@RequestParam(name="name", required=false, defaultValue="World") String name, @RequestParam(name = "attribute",required = false, defaultValue = "not_set")String attribute) {
-        System.out.println("hello from attribute " + attribute );
+    public String greeting(@RequestParam(name="name", required=false, defaultValue="World") String name) {
+        System.out.println("hello from attribute");
         return "Hello %s".formatted(name);
+    }
+    @GetMapping("/media/{id}")
+    public ResponseEntity<StreamingResponseBody> uploadMedia(@PathVariable("id") String fileId){
+        HttpHeaders headers = new HttpHeaders();
+        Map.Entry<InputStream,String> entry = driveService.downloadFileAsInputStream(fileId);
+        headers.setContentType(MediaType.parseMediaType(entry.getValue()));
+        StreamingResponseBody body = DriveService.getStreamResponseBody(entry.getKey());
+
+        return ResponseEntity.ok().headers(headers).body(body);
+
     }
     @GetMapping("/redirectURLwithPrefix")
     public ModelAndView redirectWithUsingRedirectView(ModelMap attributes){
@@ -155,9 +140,4 @@ public class AuthenticationController {
         attributes.addAttribute("attribute","redirectURLwithPrefix");
         return new ModelAndView("forward:/auth/",attributes); // forward does not send 302(all the stuff is done on the server side without and att) redirect does
     }
-//    @GetMapping("/redirectURL")
-//    public RedirectView redirectWithUsingRedirectView(RedirectAttributes attributes){
-//        attributes.addAttribute("attribute","redirectUrl");
-//        return new RedirectView("/auth/"); // sends 302
-//    }
 }

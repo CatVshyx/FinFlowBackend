@@ -6,8 +6,6 @@ import com.example.FinFlow.additional.Response;
 import com.example.FinFlow.config.JwtService;
 import com.example.FinFlow.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
