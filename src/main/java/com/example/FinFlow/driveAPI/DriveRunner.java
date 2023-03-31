@@ -23,17 +23,10 @@ public class DriveRunner {
     private static final String CLIENT_SECRET_FILE_NAME = "credentials.json";
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
 
-    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
 
-        java.io.File clientSecretFilePath = new java.io.File(CREDENTIALS_FOLDER, CLIENT_SECRET_FILE_NAME);
-        System.out.println(CREDENTIALS_FOLDER.getAbsolutePath());
-        System.out.println("PATH TO CREDENTIALS FOR GOOGLE DRIVE " + clientSecretFilePath.getAbsolutePath());
-        if (!clientSecretFilePath.exists()) {
-            throw new FileNotFoundException("Please copy " + CLIENT_SECRET_FILE_NAME //
-                    + " to folder: " + CREDENTIALS_FOLDER.getAbsolutePath());
-        }
-        InputStream in = new FileInputStream(clientSecretFilePath);
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+    private static final String credentials = "{\"installed\":{\"client_id\":\"500209315233-oh5bgvc9m4ijs8lvhcorfib0tkvpmi4i.apps.googleusercontent.com\",\"project_id\":\"datasource-381016\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://oauth2.googleapis.com/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_secret\":\"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\",\"redirect_uris\":[\"http://localhost\"]}}";
+    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new StringReader(credentials));
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY,
                 clientSecrets, SCOPES).setDataStoreFactory(new FileDataStoreFactory(CREDENTIALS_FOLDER))
