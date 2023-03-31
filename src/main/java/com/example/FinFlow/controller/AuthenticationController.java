@@ -17,6 +17,7 @@ import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import java.io.*;
@@ -132,7 +133,21 @@ public class AuthenticationController {
         StreamingResponseBody body = DriveService.getStreamResponseBody(entry.getKey());
 
         return ResponseEntity.ok().headers(headers).body(body);
-
+    }
+    @PostMapping("/uploadPhoto")
+    public ResponseEntity<Object> uploadPhoto(@RequestParam(name = "file") MultipartFile file) throws IOException {
+        Response response = driveService.uploadFile(file.getOriginalFilename(),file.getInputStream(),DriveService.PHOTO_FOLDER);
+        return new ResponseEntity<>(response.getDescription(), response.getHttpCode());
+    }
+    @PostMapping("/deleteFile")
+    public ResponseEntity<Object> deleteFile(@RequestParam(name = "id") String id) {
+        Response response = driveService.deleteFile(id);
+        return new ResponseEntity<>(response.getDescription(), response.getHttpCode());
+    }
+    @PostMapping("/createFolder")
+    public ResponseEntity<Object> createFolder(@RequestParam(name = "name") String name) {
+        Response response = driveService.createFolder(name);
+        return new ResponseEntity<>(response.getDescription(), response.getHttpCode());
     }
     @GetMapping("/redirectURLwithPrefix")
     public ModelAndView redirectWithUsingRedirectView(ModelMap attributes){
