@@ -17,7 +17,6 @@ public class DriveService{
     public static final String HELP_ID = "1KUBaJwGAaIPT66e7yX32txtew-0cnoH1";
     public DriveService(){
         System.out.println("Drive service initialized");
-
         getAllFiles(null);
     }
 

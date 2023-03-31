@@ -1,20 +1,11 @@
 package com.example.FinFlow.driveAPI;
 
-import com.google.api.client.auth.oauth2.Credential;
-
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
-import com.google.auth.oauth2.ServiceAccountCredentials;
-
 import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
@@ -22,8 +13,6 @@ import java.util.List;
 
 public class DriveRunner {
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
-    private static final GsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
     private static final String credentials = " { \"type\": \"service_account\",\n" +
             "  \"project_id\": \"datasource-381016\",\n" +
             "  \"private_key_id\": \"c2b0903ab83112792d52fef27583ac5af2ae0196\",\n" +
@@ -39,9 +28,10 @@ public class DriveRunner {
     private static Drive getService() throws IOException, GeneralSecurityException {
         HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 
-        GoogleCredential credential = GoogleCredential.fromStream(new ByteArrayInputStream(credentials.getBytes())).createScoped(SCOPES);
+        GoogleCredential credential = GoogleCredential.fromStream(new ByteArrayInputStream(credentials.getBytes()))
+                .createScoped(Collections.singletonList(DriveScopes.DRIVE));
 
-        Drive service = new Drive.Builder(httpTransport, JSON_FACTORY,credential)
+        Drive service = new Drive.Builder(httpTransport, GsonFactory.getDefaultInstance(),credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
 
@@ -52,9 +42,7 @@ public class DriveRunner {
     public static Drive getDrive() {
         try {
             return getService();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (GeneralSecurityException e) {
+        } catch (IOException | GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
 

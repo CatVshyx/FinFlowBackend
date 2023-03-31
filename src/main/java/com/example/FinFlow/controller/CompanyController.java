@@ -6,7 +6,6 @@ import com.example.FinFlow.driveAPI.DriveService;
 import com.example.FinFlow.service.CompanyService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -20,7 +19,6 @@ import java.util.Map;
 public class CompanyController {
     @Autowired
     private CompanyService companyService;
-
     @Autowired
     private JwtService jwtService;
     @Autowired

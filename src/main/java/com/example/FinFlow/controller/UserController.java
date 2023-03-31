@@ -41,8 +41,7 @@ public class UserController {
         return new ResponseEntity<>("problem",HttpStatus.BAD_REQUEST);
     }
     @PostMapping("/changeUserSettings")
-    public ResponseEntity<String> changeUserSettings(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,@RequestBody(required = false) Map<String,String> request,  @RequestParam(name = "image",required = false) MultipartFile  file) {
-        //can change phonenumber,name,
+    public ResponseEntity<String> changeUserSettings(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,@RequestBody(required = false) Map<String,String> request) {
         String email = getEmailByToken(token);
         Response response = new Response("changed",200);
         if (request != null){ response = userService.changeUsersSettings(email,request); }
