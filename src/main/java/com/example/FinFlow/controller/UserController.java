@@ -30,16 +30,6 @@ public class UserController {
     private JwtService jwtService;
     @Autowired
     private AuthenticationService authenticationService;
-    @GetMapping("/getAllUsers")
-    public ResponseEntity<Iterable<User>> getAllUsersTEST(){
-        return new ResponseEntity<>(userService.findAllUsers(), HttpStatus.OK);
-    }
-    @GetMapping("/addNewUsers")
-    public ResponseEntity<String> addNewUsersTEST(@RequestParam(name = "amount") int amount){
-        boolean isAdded = userService.addTestUsers(amount);
-        if (isAdded) return new ResponseEntity<>("added",HttpStatus.OK);
-        return new ResponseEntity<>("problem",HttpStatus.BAD_REQUEST);
-    }
     @PostMapping("/changeUserSettings")
     public ResponseEntity<String> changeUserSettings(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,@RequestBody(required = false) Map<String,String> request) {
         String email = getEmailByToken(token);

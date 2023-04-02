@@ -36,7 +36,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
         // this filter i do not to get expiced authorization to be checked and got an exception to expiration
         if(request.getServletPath().equals("/auth/login") || request.getServletPath().equals("/auth/token/refresh")){
             filterChain.doFilter(request,response);
-            return; // didnt send return :DDD
+            return;
         }
 
         final String authHeader =  request.getHeader("Authorization");
@@ -53,7 +53,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
         try{
             userEmail = jwtService.extractEmail(jwtToken);
         }catch (ExpiredJwtException e){
-            response.setStatus(403);
+            response.setStatus(423);
             response.setContentType(APPLICATION_JSON_VALUE);
             HashMap<String,String> object = new HashMap<>();
             object.put("error_message",e.getMessage());
