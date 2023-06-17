@@ -5,6 +5,8 @@ import com.example.FinFlow.additional.RegisterRequest;
 import com.example.FinFlow.additional.Response;
 import com.example.FinFlow.config.JwtService;
 import com.example.FinFlow.driveAPI.DriveService;
+import com.example.FinFlow.model.Company;
+import com.example.FinFlow.model.Date;
 import com.example.FinFlow.model.User;
 import com.example.FinFlow.service.AuthenticationService;
 import com.example.FinFlow.service.CompanyService;
@@ -21,7 +23,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import java.io.*;
+import java.time.LocalDate;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/auth")
@@ -134,6 +139,9 @@ public class AuthenticationController {
 
         return ResponseEntity.ok().headers(headers).body(body);
     }
+
+
+    // TEST
     @PostMapping("/uploadPhoto")
     public ResponseEntity<Object> uploadPhoto(@RequestParam(name = "file") MultipartFile file) throws IOException {
         Response response = driveService.uploadFile(file.getOriginalFilename(),file.getInputStream(),DriveService.PHOTO_FOLDER);
@@ -149,10 +157,41 @@ public class AuthenticationController {
         Response response = driveService.createFolder(name);
         return new ResponseEntity<>(response.getDescription(), response.getHttpCode());
     }
+    @PostMapping("/updateFile")
+    public ResponseEntity<Object> updateFile(@RequestParam(name = "name") String name,@RequestParam("file") MultipartFile file) throws IOException {
+        Response response = driveService.updateFile(name,file.getInputStream());
+        return new ResponseEntity<>(response.getDescription(), response.getHttpCode());
+    }
     @GetMapping("/redirectURLwithPrefix")
     public ModelAndView redirectWithUsingRedirectView(ModelMap attributes){
 
         attributes.addAttribute("attribute","redirectURLwithPrefix");
         return new ModelAndView("forward:/auth/",attributes); // forward does not send 302(all the stuff is done on the server side without and att) redirect does
+    }
+
+    @GetMapping("/addTestDates")
+    public ResponseEntity<String> addNewDatesTEST(@RequestParam(name = "company_id") int id){
+        Company company = companyService.findCompanyById(id);
+        Set<Date> revs = company.getRevenues();
+        if (revs.size() > 0){
+            revs.clear();
+        }
+        Random rd = new Random();
+        for(int i = 0; i < 30; i++){
+            Date local = new Date(LocalDate.now().minusDays(i),rd.nextLong(10000));
+            revs.add(local);
+        }
+        company.setRevenues(revs);
+        companyService.updateCompany(company);
+        return new ResponseEntity<>("Test dates were added",HttpStatus.OK);
+    }
+    @GetMapping("/deleteTestDates")
+    public ResponseEntity<String> removeTestDates(@RequestParam(name = "company_id") int id){
+        Company comp = companyService.findCompanyById(id);
+        if (comp == null) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        comp.getRevenues().clear();
+        companyService.updateCompany(comp);
+        return new ResponseEntity<>("Test dates were deleted",HttpStatus.OK);
     }
 }

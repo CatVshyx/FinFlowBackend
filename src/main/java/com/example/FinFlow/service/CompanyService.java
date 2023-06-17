@@ -84,8 +84,11 @@ public class CompanyService {
         User user = userService.findByEmail(userEmail).orElse(null);
         if(user == null) return new Response("User not found",404);
 
+        if (user.getCompany() == null ){
+            return new Response("Not a member of a company",400);
+        }
         Company company = companyRepository.findById(user.getCompany()).orElse(null);
-        if(user.getCompany() == null || company == null) return new Response("Not a member of a company",400);
+        if(company == null) return new Response("Not a member of a company",400);
 
 
         Collection<Allows> allows = user.getAllows();
@@ -179,6 +182,7 @@ public class CompanyService {
 
         if (admin == null || user == null) return new Response("User(s) not found",404);
         if (admin.getCompany() == null) return new Response("You are not a member of company",400);
+        if (user.getCompany() != null && admin.getCompany().intValue() == user.getCompany().intValue() ) return new Response("User is already a member",400);
         request.remove("email");
         request.put("company_id",admin.getCompany());
         HashMap<String,Object> map = new HashMap<>();

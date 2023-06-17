@@ -21,6 +21,9 @@ POST auth/resetPassword/(
 GET auth/info(
     information endpoint, tells about all the endpoints
 )
+GET auth/media/{id}{
+    returns file by specified file_id, otherwise returns BAD_REQUEST
+}
 POST auth/token/refresh(
     required params{refresh token in Authorization then you`ll be given access and refresh token}
 )
@@ -38,7 +41,7 @@ GET user/getMe(
     returns this user`s data like [email,phone_number,date_of_creation etc.]
 )
 POST user/uploadUserPhoto(
-
+    requires file, uploads photo onto your account
 )
 POST user/company/createCompany(
     required params{"name":"your_company_name"}
@@ -141,17 +144,4 @@ DELETE /res/deleteDiscount(
     required params{"id":"product_id"}
 
     available only for those who has allow "discount_edit"
-)
-
-
-
-
-
-
-----------------------------------
-TEST
-
-/addTestSoldProperty(
-    adds sold value to all the products in the app
-
 )
